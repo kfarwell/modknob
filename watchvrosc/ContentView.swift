@@ -6,17 +6,31 @@ struct ContentView: View {
     @State private var receivedValue: Double = 0.0
     let sessionDelegator = PhoneSessionDelegator()
     let client = OSCClient()
-    let address = "192.168.8.11"
     let port: UInt16 = 9000
+    @State var IPAddress = "192.168.8.11"
 
     var body: some View {
-        Text("Received Value: \(String(format: "%.2f", receivedValue))")
-            .padding()
-            .onAppear {
-                sessionDelegator.activateSession { message in
-                    self.handleMessage(message: message)
-                }
+        VStack(alignment: .center) {
+            Spacer()
+            Text("ModKnob")
+                .font(.largeTitle)
+            Spacer()
+            VStack(alignment: .center) {
+                Text("Enter your ALVR Windows PC Server IP")
+                TextField("x.x.x.x", text: $IPAddress)
+                    .multilineTextAlignment(.center)
+                    .textFieldStyle(.roundedBorder)
             }
+                .padding()
+            Text("Received Value: \(String(format: "%.2f", receivedValue))")
+                .padding()
+                .onAppear {
+                    sessionDelegator.activateSession { message in
+                        self.handleMessage(message: message)
+                    }
+                }
+            Spacer()
+        }
     }
 
     func handleMessage(message: [String: Any]) {
@@ -70,7 +84,7 @@ struct ContentView: View {
             return
         }
         do {
-            try client.send(message, to: address, port: port)
+            try client.send(message, to: IPAddress, port: port)
             print("Sent OSC message with value: \(value) to parameter: \(parameter)")
         } catch {
             print("Error sending OSC message: \(error.localizedDescription)")
