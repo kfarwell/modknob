@@ -12,51 +12,35 @@ struct ContentView: View {
 
     var body: some View {
         VStack {
-            Toggle(isOn: $isPassthroughMode) {
-                Text(isPassthroughMode ? "Passthrough" : "Spectrum")
-            }
-            .onChange(of: isPassthroughMode) { newValue in
-                let mode = newValue ? "Passthrough" : "Spectrum"
-                print("Control mode changed to: \(mode)")
-            }
-
-            Text("Value: \(String(format: "%.2f", crownValue))")
-                .focusable(true)
-                .focused($isFocused)
-                .digitalCrownRotation(
-                    $crownValue,
-                    from: 0.03,
-                    through: 1.0,
-                    by: 0.01,
-                    sensitivity: .medium,
-                    isContinuous: !isPassthroughMode,
-                    isHapticFeedbackEnabled: true
-                )
-                .onChange(of: crownValue) { newValue in
-                    print("Crown Value Changed: \(newValue)")
-                    let mode = isPassthroughMode ? "passthrough" : "spectrum"
-                    sessionDelegator.sendCrownValueToPhone(value: newValue, mode: mode)
+            HStack {
+                Toggle(isOn: $isPassthroughMode) {
+                    Text(isPassthroughMode ? "Passthrough" : "Spectrum")
                 }
+                .onChange(of: isPassthroughMode) { newValue in
+                    let mode = newValue ? "Passthrough" : "Spectrum"
+                    print("Control mode changed to: \(mode)")
+                }
+                
+                Text(String(format: "%.2f", crownValue))
+                    .focusable(true)
+                    .focused($isFocused)
+                    .digitalCrownRotation(
+                        $crownValue,
+                        from: 0.03,
+                        through: 1.0,
+                        by: 0.01,
+                        sensitivity: .medium,
+                        isContinuous: false,
+                        isHapticFeedbackEnabled: true
+                    )
+                    .onChange(of: crownValue) { newValue in
+                        print("Crown Value Changed: \(newValue)")
+                        let mode = isPassthroughMode ? "passthrough" : "spectrum"
+                        sessionDelegator.sendCrownValueToPhone(value: newValue, mode: mode)
+                    }
+            }
 
             HStack {
-                Toggle(isOn: $toggle1State) {
-                    Text("1")
-                }
-                .toggleStyle(SwitchToggleStyle(tint: .green))
-                .frame(width: 50)
-                .onChange(of: toggle1State) { newValue in
-                    sessionDelegator.sendBooleanToPhone(parameter: "VF95_Sound/1", value: newValue)
-                }
-
-                Button(action: {
-                    sessionDelegator.sendFalseTrueToPhone(parameter: "VF96_Sound/2")
-                }) {
-                    Text("2")
-                        .frame(width: 30, height: 30)
-                        .background(Color.blue)
-                        .cornerRadius(5)
-                }
-
                 Button(action: {
                     particlesValue = (particlesValue + 1) % 6
                     sessionDelegator.sendParticlesValueToPhone(value: particlesValue)
@@ -66,8 +50,83 @@ struct ContentView: View {
                         .background(Color.purple)
                         .cornerRadius(5)
                 }
+                
+                Toggle(isOn: $toggle1State) {
+                    Text("L")
+                }
+                .toggleStyle(SwitchToggleStyle(tint: .green))
+                .frame(width: 50)
+                .onChange(of: toggle1State) { newValue in
+                    sessionDelegator.sendBooleanToPhone(parameter: "VF95_Sound/1", value: newValue)
+                }
             }
-            .padding()
+            
+            HStack {
+                Button(action: {
+                    sessionDelegator.sendFalseTrueToPhone(parameter: "VF96_Sound/1")
+                }) {
+                    Text("1")
+                        .frame(width: 30, height: 30)
+                        .background(Color.blue)
+                        .cornerRadius(5)
+                }
+                
+                Button(action: {
+                    sessionDelegator.sendFalseTrueToPhone(parameter: "VF97_Sound/3")
+                }) {
+                    Text("2")
+                        .frame(width: 30, height: 30)
+                        .background(Color.blue)
+                        .cornerRadius(5)
+                }
+                
+                Button(action: {
+                    sessionDelegator.sendFalseTrueToPhone(parameter: "VF98_Sound/4")
+                }) {
+                    Text("3")
+                        .frame(width: 30, height: 30)
+                        .background(Color.blue)
+                        .cornerRadius(5)
+                }
+                
+                Button(action: {
+                    sessionDelegator.sendFalseTrueToPhone(parameter: "VF99_Sound/5")
+                }) {
+                    Text("4")
+                        .frame(width: 30, height: 30)
+                        .background(Color.blue)
+                        .cornerRadius(5)
+                }
+            }
+            
+            HStack {
+                Button(action: {
+                    sessionDelegator.sendFalseTrueToPhone(parameter: "VF100_Sound/6")
+                }) {
+                    Text("5")
+                        .frame(width: 30, height: 30)
+                        .background(Color.blue)
+                        .cornerRadius(5)
+                }
+                
+                Button(action: {
+                    sessionDelegator.sendFalseTrueToPhone(parameter: "VF101_Sound/7")
+                }) {
+                    Text("6")
+                        .frame(width: 30, height: 30)
+                        .background(Color.blue)
+                        .cornerRadius(5)
+                }
+                
+                Button(action: {
+                    sessionDelegator.sendFalseTrueToPhone(parameter: "VF102_Sound/8")
+                }) {
+                    Text("7")
+                        .frame(width: 30, height: 30)
+                        .background(Color.blue)
+                        .cornerRadius(5)
+                }
+            }
         }
         .padding()
         .onAppear {
