@@ -7,7 +7,7 @@ struct ContentView: View {
     let sessionDelegator = PhoneSessionDelegator()
     let client = OSCClient()
     let port: UInt16 = 9000
-    @State var IPAddress = "192.168.8.11"
+    @State var IPAddress = UserDefaults.standard.string(forKey: "OSCServerIP") ?? ""
 
     var body: some View {
         VStack(alignment: .center) {
@@ -16,8 +16,10 @@ struct ContentView: View {
                 .font(.largeTitle)
             Spacer()
             VStack(alignment: .center) {
-                Text("Enter your ALVR Windows PC Server IP")
-                TextField("x.x.x.x", text: $IPAddress)
+                Text("Enter your OSC server's IP address:")
+                TextField("x.x.x.x", text: $IPAddress, onCommit: {
+                    saveIPAddress()
+                })
                     .multilineTextAlignment(.center)
                     .textFieldStyle(.roundedBorder)
             }
@@ -31,6 +33,11 @@ struct ContentView: View {
                 }
             Spacer()
         }
+    }
+
+    func saveIPAddress() {
+        UserDefaults.standard.set(IPAddress, forKey: "OSCServerIP")
+        print("Saved IP Address: \(IPAddress)")
     }
 
     func handleMessage(message: [String: Any]) {

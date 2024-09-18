@@ -18,7 +18,7 @@
 
 ![iPhone](./iphone.png)
 
-Inpute the Windows PC ALVR Server IP here.
+Inpute the VRChat/OSC server IP here.
 
 
 ## How to use the Watch app
