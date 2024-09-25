@@ -3,11 +3,10 @@ import OSCKit
 import WatchConnectivity
 
 struct ContentView: View {
-    @State private var receivedValue: Double = 0.0
     let sessionDelegator = PhoneSessionDelegator()
     let client = OSCClient()
-    let port: UInt16 = 9000
-    @State var IPAddress = UserDefaults.standard.string(forKey: "OSCServerIP") ?? ""
+    let serverPort: UInt16 = 9000
+    @State var serverHost = UserDefaults.standard.string(forKey: "serverHost") ?? ""
 
     var body: some View {
         VStack(alignment: .center) {
@@ -16,15 +15,13 @@ struct ContentView: View {
                 .font(.largeTitle)
             Spacer()
             VStack(alignment: .center) {
-                Text("Enter your OSC server's IP address:")
-                TextField("x.x.x.x", text: $IPAddress, onCommit: {
-                    saveIPAddress()
+                Text("Enter your OSC server's IP/hostname:")
+                TextField("x.x.x.x", text: $serverHost, onCommit: {
+                    saveServerHost()
                 })
                     .multilineTextAlignment(.center)
                     .textFieldStyle(.roundedBorder)
             }
-                .padding()
-            Text("Received Value: \(String(format: "%.2f", receivedValue))")
                 .padding()
                 .onAppear {
                     sessionDelegator.activateSession { message in
@@ -35,48 +32,21 @@ struct ContentView: View {
         }
     }
 
-    func saveIPAddress() {
-        UserDefaults.standard.set(IPAddress, forKey: "OSCServerIP")
-        print("Saved IP Address: \(IPAddress)")
+    func saveServerHost() {
+        UserDefaults.standard.set(serverHost, forKey: "serverHost")
+        print("Saved OSC server host: \(serverHost)")
     }
 
     func handleMessage(message: [String: Any]) {
-        print("Received message from watch: \(message)")
+        print("Watch sent: \(message)")
 
-        guard let messageType = message["type"] as? String else {
-            print("Message does not contain 'type'")
-            return
-        }
-
-        switch messageType {
-        case "crownValue":
-            if let value = message["value"] as? Double,
-               let mode = message["mode"] as? String {
-                let floatValue = Float(value)
-                let parameter = "/avatar/parameters/\(mode)"
-                sendOSCValue(parameter: parameter, value: floatValue)
-                DispatchQueue.main.async {
-                    self.receivedValue = value
-                }
-            }
-        case "boolean":
-            if let parameterName = message["parameter"] as? String,
-               let value = message["value"] as? Bool {
-                let parameter = "/avatar/parameters/\(parameterName)"
-                sendOSCValue(parameter: parameter, value: value)
-            }
-        case "particles":
-            if let value = message["value"] as? Int {
-                let parameter = "/avatar/parameters/VF84_PC/Vis/Colormode"
-                sendOSCValue(parameter: parameter, value: value)
-            }
-        default:
-            print("Unknown message type: \(messageType)")
+        if let parameter = message["parameter"] as? String,
+           let value = message["value"] {
+            sendOSCValue(parameter: parameter, value: value)
         }
     }
 
     func sendOSCValue(parameter: String, value: Any) {
-        print("Preparing to send OSC value: \(value) to parameter: \(parameter)")
         let message: OSCMessage
         if let floatValue = value as? Float {
             message = OSCMessage(parameter, values: [floatValue])
@@ -91,8 +61,8 @@ struct ContentView: View {
             return
         }
         do {
-            try client.send(message, to: IPAddress, port: port)
-            print("Sent OSC message with value: \(value) to parameter: \(parameter)")
+            try client.send(message, to: serverHost, port: serverPort)
+            print("Sending OSC: \(parameter) = \(value)")
         } catch {
             print("Error sending OSC message: \(error.localizedDescription)")
         }
